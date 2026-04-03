@@ -138,7 +138,7 @@ echo/
 └── context.py     # (coming soon) Token-aware context management
 ```
 --- 
-## Roadmap
+## Functionality im still working on 
 
 - [x] Core agent loop with tool calling
 - [x] File read/write/create/delete tools
