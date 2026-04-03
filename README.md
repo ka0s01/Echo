@@ -8,7 +8,7 @@ To use it all you have to do is CD into ur project folder and enter echo-start i
 
 ## Stack
 
-- **Model:** `qwen2.5-coder:14b` via Ollama (local, no API key needed)
+- **Model:** `qwen2.5-coder:14b` via Ollama 
 - **UI:** Rich (pretty terminal output)
 - **Memory:** Conversation history stored in-process
 
@@ -52,6 +52,7 @@ Then run `source ~/.bashrc` or `source ~/.zshrc`.
 ollama pull qwen2.5-coder:14b
 ollama serve
 ```
+
 ---
 
 ## Usage
@@ -76,6 +77,7 @@ That's it. Echo picks up the current folder as the working directory and all fil
 
 ---
 
+
 ## How tool calling works (and why it's done manually here)
 
 `qwen2.5-coder:14b` is the model i used here and unfortunately it does not support native tool calling :(  when you pass the tool schema to OLLAMA it just ignores it,so Echo
@@ -87,7 +89,9 @@ uses "Prompt Engineered function calling instread"
 
 It's the same idea as native tool calling, just done manually.
 
-### Want to use a smarter model?
+---
+
+## Want to use a smarter model?
 
 If you swap in a model that actually supports native tool calling (GPT-4o, Claude, Gemini etc.), you can ditch the manual parsing and use proper tool calling instead.
 
