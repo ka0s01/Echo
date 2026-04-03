@@ -312,13 +312,3 @@ TOOLS = [
 
 
 ]
-
-if __name__ == "__main__":
-    print(create_file("test.txt", "hello world"))
-    print(read_file("test.txt"))
-    print(append_file("test.txt", "\nsecond line"))
-    print(read_file("test.txt"))
-    print(list_directory("."))
-    print(run_command("echo hi"))
-    print(search_in_files("hello", "."))
-    print(delete_file("test.txt"))
