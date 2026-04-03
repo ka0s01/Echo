@@ -1,5 +1,26 @@
-.env 
-venv/
+# Python
 __pycache__/
 *.pyc
-response_testing.py
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Package installer artifacts
+echo.egg-info/
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+response_testing.py 
