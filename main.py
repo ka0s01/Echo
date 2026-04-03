@@ -1,7 +1,6 @@
 import ollama 
 from ui import *
 from memory import *
-
 memory = Memory()
 
 def run():
