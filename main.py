@@ -1,10 +1,12 @@
 import ollama 
 from ui import *
 from memory import *
+from config import PROJECT_DIR
 memory = Memory()
 
 def run():
     print_welcome()
+    print_system(f"Working dir: {PROJECT_DIR}")
 
     while True:
         try:
