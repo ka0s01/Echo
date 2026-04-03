@@ -129,8 +129,7 @@ def search_in_files(query: str, path: str = ".") -> str:
         return f"Error searching files: {str(e)}"
 
 
-# ── Tool dispatcher ───────────────────────────────
-# This is how the agent calls tools by name at runtime
+# Tool dispatcher
 
 TOOL_FUNCTIONS = {
     "read_file": read_file,
