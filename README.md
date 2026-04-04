@@ -91,6 +91,27 @@ It's the same idea as native tool calling, just done manually.
 
 ---
 
+## Context Engineering
+LLMs have a fixed context window for the model i used its 32,000 tokens.
+Context engineering ensures that what you send to the model is worth the tokens it costs.
+
+### How it works
+
+Echo tracks token usage after every turn. When the message history crosses 80% of the context window (~25,600 tokens), compression kicks in in two stages:
+
+Stage 1 — Drop old tool pairs. Tool results are the fattest and most disposable messages — once the agent has acted on them, the raw data has no future value. Echo removes the oldest assistant+tool message pairs first.
+
+Stage 2 — Summarize. If dropping tool pairs isn't enough, Echo compresses the remaining old messages into a single summary message using the model itself.
+
+### What is always preserved
+
+- System prompt — Echo's identity, tools, and safety rules
+- Last 15 messages — enough context for the current task
+- Summary message if one exists
+
+
+---
+
 ## Want to use a smarter model?
 
 If you swap in a model that actually supports native tool calling (GPT-4o, Claude, Gemini etc.), you can ditch the manual parsing and use proper tool calling instead.
@@ -117,12 +138,11 @@ The rest of the agent loop stays the same.
 ---
 
 ## Preview
-
-<img width="900" height="330" alt="image" src="https://github.com/user-attachments/assets/e5a7345f-3533-4ba9-b7ad-6691bb841f3f" />
-<img width="900" height="330" alt="image" src="https://github.com/user-attachments/assets/d9a6f95e-559e-407c-921a-929ec34cf245" />
-<img width="900" height="330" alt="image" src="https://github.com/user-attachments/assets/ed29577b-4b73-4574-9d04-6fc734c07cfa" />
-<img width="900" height="330" alt="image" src="https://github.com/user-attachments/assets/61072baf-90cb-4aa1-9607-235d8b0f9034" />
-
+<img width="1000" height="811" alt="Screenshot 2026-04-04 165257" src="https://github.com/user-attachments/assets/5933ea04-52c2-47b1-abe3-6c5ffce95f33" />
+<img width="1000" height="839" alt="Screenshot 2026-04-04 165305" src="https://github.com/user-attachments/assets/2d6cca96-4400-4fa3-bbfa-ef1ff3b712b0" />
+<img width="1000" height="851" alt="Screenshot 2026-04-04 165314" src="https://github.com/user-attachments/assets/f3578fdd-d216-4467-a20b-6a8ca5fd291a" />
+<img width="1000" height="795" alt="Screenshot 2026-04-04 165334" src="https://github.com/user-attachments/assets/a52a7c5d-2d79-499d-a702-a986883865e2" />
+<img width="1000" height="640" alt="Screenshot 2026-04-04 165341" src="https://github.com/user-attachments/assets/27183874-6a71-486f-a7c2-9f6db13b3285" />
 
 
 ---
@@ -147,8 +167,7 @@ echo/
 - [x] Core agent loop with tool calling
 - [x] File read/write/create/delete tools
 - [x] Shell command execution
-- [ ] `context.py` — smart context window management for large projects
+- [x] `context.py` — smart context window management for large projects
 - [ ] Diff preview before file changes
 - [ ] Confirmation prompts before destructive actions
-- [ ] `/explain` and `/review` commands
 - [ ] MCP server — expose Echo's tools to other clients
