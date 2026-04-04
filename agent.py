@@ -1,10 +1,10 @@
 import ollama
 from memory import Memory
 from tools import TOOLS, execute_tool
-from config import MODEL,KEEP_RECENT,THRESHOLD,CONTEXT_LIMIT
-from ui import print_tool_call, print_tool_result, print_error
+from config import MODEL, KEEP_RECENT, THRESHOLD, CONTEXT_LIMIT
 from parser import parse_tool_call
-from context import estimate_tokens,count_total_token,drop_oldest_tool_pair,generate_summary
+from context import estimate_tokens, count_total_token, drop_oldest_tool_pair, generate_summary
+from ui import AgentEvent
 import config
 
 SYSTEM_PROMPT = f"""
@@ -74,7 +74,7 @@ Rules:
 - No markdown
 - Must be valid JSON
 - Use correct argument names
-- When writing file contents, ALWAYS use real newlines, never literal \n characters
+- When writing file contents, ALWAYS use real newlines, never literal \\n characters
 - When running commands with file paths, always wrap paths in double quotes to handle spaces
 ---
 
@@ -102,48 +102,56 @@ class Agent:
         self.memory = memory
         self.memory.add("system", SYSTEM_PROMPT)
 
-    def run(self, user_message: str) -> str:
-        self.memory.add("user",user_message)
-        #inner agent loop for tool calling
+    def run(self, user_message: str, emit_fn=None) -> str:
+        """
+        emit_fn: callable(AgentEvent) — provided by the TUI to receive live updates.
+                 Falls back to None (silent) if not provided.
+        """
+        def emit(event: AgentEvent):
+            if emit_fn:
+                emit_fn(event)
+
+        self.memory.add("user", user_message)
+
         count = 0
-        while count<15:
-            count+=1
+        while count < 15:
+            count += 1
             messages = self.memory.get_all()
-            if count_total_token(messages) > CONTEXT_LIMIT*THRESHOLD:
-               messages=drop_oldest_tool_pair(messages)
 
+            if count_total_token(messages) > CONTEXT_LIMIT * THRESHOLD:
+                messages = drop_oldest_tool_pair(messages)
 
-            if count_total_token(messages)>CONTEXT_LIMIT*THRESHOLD:
-               messages = generate_summary(messages)
+            if count_total_token(messages) > CONTEXT_LIMIT * THRESHOLD:
+                messages = generate_summary(messages)
+
             self.memory.messages = messages
+
             response = ollama.chat(
-                model = MODEL,
-                messages= messages
+                model=MODEL,
+                messages=messages,
             )
             reply = response.message
             tool_call = parse_tool_call(reply.content)
-            
+
             if tool_call:
                 tool_name = tool_call["name"]
                 arguments = tool_call["arguments"]
-                self.memory.add("assistant",reply.content)
+                self.memory.add("assistant", reply.content)
 
-                print_tool_call(tool_name, arguments)
+                emit(AgentEvent("tool_call", tool_name=tool_name, args=arguments))  # ← was print_tool_call
+
                 result = execute_tool(tool_name, arguments)
-                print_tool_result(result)
+
+                emit(AgentEvent("tool_result", text=result))                        # ← was print_tool_result
 
                 self.memory.messages.append({
                     "role": "tool",
                     "content": result,
                 })
-                
                 continue
+
             else:
                 final_reply = reply.content
-                self.memory.add("assistant",final_reply)
-                
+                self.memory.add("assistant", final_reply)
+                emit(AgentEvent("assistant", text=final_reply))                     # ← was print_assistant
                 return final_reply
-            
-        
-
-    

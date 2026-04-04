@@ -1,4 +1,4 @@
-from ui import print_welcome, print_user, print_assistant, print_error, print_system
+from ui import run_tui, AgentEvent
 from memory import Memory
 from agent import Agent
 import config
@@ -6,36 +6,11 @@ import config
 memory = Memory()
 agent = Agent(memory)
 
-def run():
-    print_welcome()
-    print_system(f"Working directory: {config.PROJECT_DIR}")
-
-    while True:
-        try:
-            user_input = input("\n> ").strip()
-            print("\033[A\033[K", end="")
-
-            if not user_input:
-                continue
-
-            if user_input == "/clear":
-                memory.clear()
-                print_system("Memory cleared.")
-                continue
-
-            if user_input == "exit":
-                print_system("Goodbye.")
-                break
-
-            print_user(user_input)
-            response = agent.run(user_input)
-            print_assistant(response)
-
-        except KeyboardInterrupt:
-            print_system("\nGoodbye.")
-            break
-        except Exception as e:
-            print_error(str(e))
+def agent_runner(user_message: str, emit_fn):
+    agent.run(user_message, emit_fn=emit_fn)
 
 if __name__ == "__main__":
-    run()
+    run_tui(agent_runner)
+
+def run():
+    run_tui(agent_runner)
