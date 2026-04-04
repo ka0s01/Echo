@@ -4,6 +4,16 @@ This is a  CLI-based AI agent that runs in your terminal, reads and writes files
 
 To use it all you have to do is CD into ur project folder and enter echo-start in ur terminal
 
+Most AI coding tools depend on large proprietary models.
+
+Echo explores a different approach:
+> How far can you push a small local model using system design instead of raw intelligence?
+
+Key ideas:
+- Controlled context instead of full history
+- Tool-based execution instead of pure reasoning
+- Iterative agent loop instead of one-shot responses
+
 ---
 
 ## Stack
@@ -11,6 +21,67 @@ To use it all you have to do is CD into ur project folder and enter echo-start i
 - **Model:** `qwen2.5-coder:14b` via Ollama 
 - **UI:** Rich (pretty terminal output)
 - **Memory:** Conversation history stored in-process
+
+---
+
+
+
+## How tool calling works (and why it's done manually here)
+
+`qwen2.5-coder:14b` is the model i used here and unfortunately it does not support native tool calling :(  when you pass the tool schema to OLLAMA it just ignores it,so Echo
+uses "Prompt Engineered function calling instread"
+
+- The system prompt describes all available tools and tells the model to respond with a raw JSON object when it wants to use one — no markdown, no explanation, just JSON
+- A custom parser (`parser.py`) extracts that JSON from the model's response
+- The agent dispatches the tool call, gets the result, feeds it back into the conversation, and loops until the model gives a plain text final response
+
+It's the same idea as native tool calling, just done manually.
+
+---
+
+## Context Engineering
+LLMs have a fixed context window for the model i used its 32,000 tokens.
+Context engineering ensures that what you send to the model is worth the tokens it costs.
+
+### How it works
+
+Echo tracks token usage after every turn. When the message history crosses 80% of the context window (~25,600 tokens), compression kicks in in two stages:
+
+Stage 1 — Drop old tool pairs. Tool results are the fattest and most disposable messages — once the agent has acted on them, the raw data has no future value. Echo removes the oldest assistant+tool message pairs first.
+
+Stage 2 — Summarize. If dropping tool pairs isn't enough, Echo compresses the remaining old messages into a single summary message using the model itself.
+
+### What is always preserved
+
+- System prompt — Echo's identity, tools, and safety rules
+- Last 15 messages — enough context for the current task
+- Summary message if one exists
+
+
+---
+
+## Want to use a smarter model?
+
+If you swap in a model that actually supports native tool calling (GPT-4o, Claude, Gemini etc.), you can ditch the manual parsing and use proper tool calling instead.
+
+For **Ollama models that support it** you have to change `agent.py`:
+
+```python
+response = ollama.chat(
+    model=MODEL,
+    messages=self.memory.get_all(),
+    tools=TOOLS  # pass tools here
+)
+
+# Then check response.message.tool_calls instead of parsing content
+if response.message.tool_calls:
+    for tool in response.message.tool_calls:
+        result = execute_tool(tool.function.name, tool.function.arguments)
+        ...
+```
+We just pass the tool schema and just check tool_calls int he response instead of parsing it
+The rest of the agent loop stays the same.
+
 
 ---
 
@@ -77,65 +148,6 @@ That's it. Echo picks up the current folder as the working directory and all fil
 
 ---
 
-
-## How tool calling works (and why it's done manually here)
-
-`qwen2.5-coder:14b` is the model i used here and unfortunately it does not support native tool calling :(  when you pass the tool schema to OLLAMA it just ignores it,so Echo
-uses "Prompt Engineered function calling instread"
-
-- The system prompt describes all available tools and tells the model to respond with a raw JSON object when it wants to use one — no markdown, no explanation, just JSON
-- A custom parser (`parser.py`) extracts that JSON from the model's response
-- The agent dispatches the tool call, gets the result, feeds it back into the conversation, and loops until the model gives a plain text final response
-
-It's the same idea as native tool calling, just done manually.
-
----
-
-## Context Engineering
-LLMs have a fixed context window for the model i used its 32,000 tokens.
-Context engineering ensures that what you send to the model is worth the tokens it costs.
-
-### How it works
-
-Echo tracks token usage after every turn. When the message history crosses 80% of the context window (~25,600 tokens), compression kicks in in two stages:
-
-Stage 1 — Drop old tool pairs. Tool results are the fattest and most disposable messages — once the agent has acted on them, the raw data has no future value. Echo removes the oldest assistant+tool message pairs first.
-
-Stage 2 — Summarize. If dropping tool pairs isn't enough, Echo compresses the remaining old messages into a single summary message using the model itself.
-
-### What is always preserved
-
-- System prompt — Echo's identity, tools, and safety rules
-- Last 15 messages — enough context for the current task
-- Summary message if one exists
-
-
----
-
-## Want to use a smarter model?
-
-If you swap in a model that actually supports native tool calling (GPT-4o, Claude, Gemini etc.), you can ditch the manual parsing and use proper tool calling instead.
-
-For **Ollama models that support it** you have to change `agent.py`:
-
-```python
-response = ollama.chat(
-    model=MODEL,
-    messages=self.memory.get_all(),
-    tools=TOOLS  # pass tools here
-)
-
-# Then check response.message.tool_calls instead of parsing content
-if response.message.tool_calls:
-    for tool in response.message.tool_calls:
-        result = execute_tool(tool.function.name, tool.function.arguments)
-        ...
-```
-We just pass the tool schema and just check tool_calls int he response instead of parsing it
-The rest of the agent loop stays the same.
-
-
----
 
 ## Preview
 
