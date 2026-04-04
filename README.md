@@ -138,6 +138,13 @@ The rest of the agent loop stays the same.
 ---
 
 ## Preview
+
+### updated TUI
+<img width="1866" height="931" alt="image" src="https://github.com/user-attachments/assets/555d8f19-cd31-4017-9d3c-bcceab46c372" />
+<img width="1868" height="942" alt="image" src="https://github.com/user-attachments/assets/48be6220-2acb-406d-8f86-91823cfe000f" />
+<img width="1893" height="955" alt="image" src="https://github.com/user-attachments/assets/e9760f09-de8d-41b0-9270-4fcdc5090535" />
+
+## old TUI
 <img width="1000" height="811" alt="Screenshot 2026-04-04 165257" src="https://github.com/user-attachments/assets/5933ea04-52c2-47b1-abe3-6c5ffce95f33" />
 <img width="1000" height="839" alt="Screenshot 2026-04-04 165305" src="https://github.com/user-attachments/assets/2d6cca96-4400-4fa3-bbfa-ef1ff3b712b0" />
 <img width="1000" height="851" alt="Screenshot 2026-04-04 165314" src="https://github.com/user-attachments/assets/f3578fdd-d216-4467-a20b-6a8ca5fd291a" />
