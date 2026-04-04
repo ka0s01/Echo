@@ -75,7 +75,7 @@ Rules:
 - Must be valid JSON
 - Use correct argument names
 - When writing file contents, ALWAYS use real newlines, never literal \n characters
-
+- When running commands with file paths, always wrap paths in double quotes to handle spaces
 ---
 
 FINAL RESPONSE:
@@ -105,7 +105,9 @@ class Agent:
     def run(self, user_message: str) -> str:
         self.memory.add("user",user_message)
         #inner agent loop for tool calling
-        while True:
+        count = 0
+        while count<15:
+            count+=1
             messages = self.memory.get_all()
             if count_total_token(messages) > CONTEXT_LIMIT*THRESHOLD:
                messages=drop_oldest_tool_pair(messages)
@@ -134,11 +136,12 @@ class Agent:
                     "role": "tool",
                     "content": result,
                 })
-
+                
                 continue
             else:
                 final_reply = reply.content
                 self.memory.add("assistant",final_reply)
+                
                 return final_reply
             
         

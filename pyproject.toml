@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-py-modules = ["main", "agent", "tools", "parser", "memory", "ui", "config"]
+py-modules = ["context","main", "agent", "tools", "parser", "memory", "ui", "config"]
 
 [project.scripts]
 echo-start = "main:run"
