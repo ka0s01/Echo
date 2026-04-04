@@ -1,9 +1,10 @@
 import ollama
 from memory import Memory
 from tools import TOOLS, execute_tool
-from config import MODEL
+from config import MODEL,KEEP_RECENT,THRESHOLD,CONTEXT_LIMIT
 from ui import print_tool_call, print_tool_result, print_error
 from parser import parse_tool_call
+from context import estimate_tokens,count_total_token,drop_oldest_tool_pair,generate_summary
 import config
 
 SYSTEM_PROMPT = f"""
@@ -105,10 +106,17 @@ class Agent:
         self.memory.add("user",user_message)
         #inner agent loop for tool calling
         while True:
+            messages = self.memory.get_all()
+            if count_total_token(messages) > CONTEXT_LIMIT*THRESHOLD:
+               messages=drop_oldest_tool_pair(messages)
 
+
+            if count_total_token(messages)>CONTEXT_LIMIT*THRESHOLD:
+               messages = generate_summary(messages)
+            self.memory.messages = messages
             response = ollama.chat(
                 model = MODEL,
-                messages= self.memory.get_all()
+                messages= messages
             )
             reply = response.message
             tool_call = parse_tool_call(reply.content)
