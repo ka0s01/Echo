@@ -147,21 +147,6 @@ The rest of the agent loop stays the same.
 
 ---
 
-
-## Project structure
-
-```
-echo/
-├── main.py        # Entry point, chat loop
-├── agent.py       # Agent loop, tool dispatch
-├── tools.py       # Tool implementations + schema
-├── parser.py      # Extracts tool call JSON from model output
-├── memory.py      # Conversation history
-├── ui.py          # Terminal UI (Rich)
-├── config.py      # Model name, project dir
-└── context.py     # (coming soon) Token-aware context management
-```
---- 
 ## Functionality im still working on 
 
 - [x] Core agent loop with tool calling
