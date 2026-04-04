@@ -17,13 +17,33 @@ Key ideas:
 ---
 
 ## Stack
-
-- **Model:** `qwen2.5-coder:14b` via Ollama 
-- **UI:** Rich (pretty terminal output)
-- **Memory:** Conversation history stored in-process
+- **Model:** qwen2.5-coder:14b via Ollama  
+- **UI:** Textual  
+- **Tool calling:** Prompt-engineered (manual JSON parsing via parser.py)
+- **Context management:** Token-aware with two-stage compression
+- **Threading:** Agent runs on background thread, communicates via event queue
 
 ---
-
+## Architecture
+ 
+```
+user input
+    │
+    ▼
+ui.py  ── spawns daemon thread ──▶  agent.py
+(Textual TUI, main thread)          (agent loop, background thread)
+(stays responsive always)               │
+    ▲                               memory.py
+    │                               context.py (token check)
+    │ AgentEvent via                    │
+    │ call_from_thread()           ollama.chat() ← blocking, fine on bg thread
+    │                                   │
+    └───────────────────────────── parser.py (extract JSON tool call)
+                                        │
+                                    tools.py (read/write/delete/run/search)
+                                        │
+                                   result → memory → loop continues
+```
 
 
 ## How tool calling works (and why it's done manually here)
