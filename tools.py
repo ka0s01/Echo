@@ -38,17 +38,21 @@ def append_file(path: str, content: str) -> str:
 
 def list_directory(path: str) -> str:
     try:
-        tree_str = ""
-        for root, dirs, files in os.walk(path):
-            dirs[:] = [d for d in dirs if d not in ['venv', '__pycache__', '.git', 'node_modules', '.idea']]
-            level = root.replace(path, "").count(os.sep)
-            indent = "│   " * level
-            folder_name = os.path.basename(root)
-            tree_str += f"{indent}├── {folder_name}/\n"
-            sub_indent = "│   " * (level + 1)
-            for file in files:
-                tree_str += f"{sub_indent}├── {file}\n"
-        return tree_str
+        ignore = {'venv', '__pycache__', '.git', 'node_modules', '.idea', '.pytest_cache'}
+        lines = []
+        base = Path(path).resolve()
+
+        for root, dirs, files in os.walk(base):
+            dirs[:] = sorted(d for d in dirs if d not in ignore)
+            root_path = Path(root)
+            level = len(root_path.relative_to(base).parts)
+            indent = "    " * level
+            lines.append(f"{indent}{root_path.name}/")
+            sub_indent = "    " * (level + 1)
+            for file in sorted(files):
+                lines.append(f"{sub_indent}{file}")
+
+        return "\n".join(lines) if lines else "Directory is empty."
     except Exception as e:
         return f"Error listing directory: {str(e)}"
 
